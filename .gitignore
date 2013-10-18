@@ -6,6 +6,7 @@
 # Folders
 _obj
 _test
+_crosscomp
 
 # Architecture specific extensions/prefixes
 *.[568vq]
@@ -20,3 +21,5 @@ _cgo_export.*
 _testmain.go
 
 *.exe
+
+.DS_Store
