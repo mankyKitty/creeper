@@ -14,9 +14,9 @@ ON TO THE USAGE!
 Usage of ./creeper:
   -cmd="": This is the cmd to execute
   -file="": This is the file to watch!
-  -q=false: Intent message won't be displayed (optional)
-  -shuttup=false: Creeper will make a best error to not make any std/out/err noise at all. (optional)
-  -wait=1000: Time in Milliseconds between creeping on the file (optional - defaults to 1 second)
+  -q=false: Intent message won't be displayed
+  -shuttup=false: Creeper will make a best error to not make any std/out/err noise at all.
+  -wait=1s: An interval duration, defaults to '1s' for one second.
 ```
 
 To use simply point it at a file and give it something to do when the file changes:
@@ -32,11 +32,11 @@ This will attempt a build of bar.go whenever <code>foo.go</code> is updated, che
 Maybe you type super fast, or you want something to happen if an error.log is updated somewhere. You can mess with the <code>-wait</code> option to tell creeper how often you want to creep on the file in question.
 
 ```
-creeper -file bad-errors.log -cmd notify_someone.sh -wait 3600000
+creeper -file bad-errors.log -cmd notify_someone.sh -wait 1h
 
 ...or
 
-creeper -file thesis.tex -wait 200 -cmd pdflatex thesis.tex
+creeper -file thesis.tex -wait 200ms -cmd pdflatex thesis.tex
 ```
 
 Any trailing arguments will be packaged as parameters for the given command when it runs, thus...
