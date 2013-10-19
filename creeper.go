@@ -6,31 +6,35 @@ import (
 	"os"
 	"os/exec"
 	"time"
-	"strconv"
-	"strings"
 )
 
 // Some basic and kinda stupid protection against fail-biscuit arguments.
-func checkInputArgs(f, c string, t int) bool {
+func checkInputArgs(f, c string, t time.Duration) bool {
 	return (f == "" || c == "" || t <= 0)	
 }
 
 // Display a basic output to the user of what we're planning to do
-// with the chosen file that we're creeping on..
-func displayIntent(f, c string, a []string, t int) {
+// with the chosen file that we're creeping on.
+func displayIntent(f, c string, a []string, t time.Duration) {
 	fmt.Printf("Creeping on: '%v'\n", f)
 	fmt.Printf("When modified, Creeper will...\nExecute: '%v',\nWith Arguments: '%v'\n", c, a)
 }
 
+// Get default time
+func defaultTime() time.Duration {
+	time,_ := time.ParseDuration("1s")
+	return time
+}
+
 func main() {
-	// Hide the starting message of intent.
+	// Hide the starting message of intent
 	quiet := flag.Bool("q", false, "Intent message won't be displayed")
 
 	// Try to hide any output of anything except Creeper crashes.
 	superQuiet := flag.Bool("shuttup", false, "Creeper will make a best error to not make any std/out/err noise at all.")
 
 	// Time in milliseconds between creepy drive bys on the file.
-	tickerDuration := flag.Int("wait", 1000, "Time in Milliseconds between creeping on the file")
+	tickerDuration := flag.Duration("wait", defaultTime(), "An interval duration, defaults to '1s' for one second.")
 	
 	// This is what we're actually going to creep on.
 	file := flag.String("file", "", "This is the file to watch!")
@@ -68,25 +72,14 @@ func main() {
 	// Get an initial modification time for comparison.
 	lastModTime := f.ModTime()
 
-	duration := strconv.Itoa(*tickerDuration) + "ms"
-
-	// Configure our tick duration.. 
-	sec, err := time.ParseDuration(duration)
-
-	if err != nil {
-		// BE BROKE! :(
-		fmt.Println("Timer Creation Failed")
-		os.Exit(1)
-	}
-
 	// Ticker is just a channel that puts a value on the channel on each tick of
 	// of our configured duration.
-	ticker := time.Tick(sec)
+	ticker := time.Tick(*tickerDuration)
 
 	// Start monitoring and tickening !
 	for _ = range ticker {
 
-		// Check the file so we have fresh information.
+		// Check the file so we have fresh information
 		fileInfo, err := os.Stat(*file)
 
 		// Make sure the file hasn't disappeared for some reason.
@@ -100,16 +93,17 @@ func main() {
 		if fileInfo.ModTime() != lastModTime {
 
 			// Create our command thingy
-			stuffDoer := exec.Command(*cmd, strings.Join(cmdArgs, " "))
+			stuffDoer := exec.Command(*cmd)
+
+			if len(cmdArgs) > 0 {
+				newArgs := make([]string, len(cmdArgs) + 1)
+				copy(newArgs, stuffDoer.Args)
+				copy(newArgs[len(stuffDoer.Args):], cmdArgs)
+				stuffDoer.Args = newArgs
+			}
 
 			// Run the command
-			out, cmdErr := stuffDoer.CombinedOutput()
-
-			if cmdErr != nil {
-				fmt.Println("Command Execution Failed. Output below...")
-				fmt.Println(cmdErr.Error())
-				os.Exit(1)
-			}
+			out,_ := stuffDoer.CombinedOutput()
 
 			if !*superQuiet {
 				fmt.Printf("%s", out)
