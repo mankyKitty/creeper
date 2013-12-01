@@ -24,3 +24,6 @@ _testmain.go
 
 .DS_Store
 *.gz
+
+# I don't think anyone else could need this..
+build.sh
