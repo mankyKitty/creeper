@@ -96,6 +96,9 @@ func main() {
 			stuffDoer := exec.Command(*cmd)
 
 			if len(cmdArgs) > 0 {
+				// We must construct a new slice that is our command arguments.
+				// TODO(1) Keep this somewhere to avoid the wasted effort of
+				// rebuilding it all the time.
 				newArgs := make([]string, len(cmdArgs) + 1)
 				copy(newArgs, stuffDoer.Args)
 				copy(newArgs[len(stuffDoer.Args):], cmdArgs)
@@ -104,6 +107,10 @@ func main() {
 
 			// Run the command
 			out,_ := stuffDoer.CombinedOutput()
+			// The err from CombinedOutput is not used because currently I want the creeper
+			// to simply bail out if there is something going wrong. It'll be an enhancement
+			// for later if there is a need but at the moment I'm taking a page from the UNIX
+			// art and Erlang motto and letting it crash, early, and loudly.
 
 			if !*superQuiet {
 				fmt.Printf("%s", out)
